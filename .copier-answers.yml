@@ -1,0 +1,12 @@
+# Do not edit - changes here will be overwritten by Copier
+_commit: v1
+_src_path: gh:pydev-guide/pyrepo-copier
+author_email: davidetorre99@gmail.com
+author_name: Davide Torre
+github_username: davidetorre99
+mode: tooling
+module_name: alnfile
+project_name: alnfile
+project_short_description: A Python package for reading AreTomo alignment files into
+    pandas DataFrames.
+
