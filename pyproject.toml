@@ -19,15 +19,15 @@ name = "alnfile"
 dynamic = ["version"]
 description = "A Python package for reading AreTomo alignment files into pandas DataFrames."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "BSD-3-Clause" }
 authors = [{ name = "Davide Torre", email = "davidetorre99@gmail.com" }]
 # https://pypi.org/classifiers/
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",    
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -35,7 +35,9 @@ classifiers = [
     "Typing :: Typed",
 ]
 # add your package dependencies here
-dependencies = []
+dependencies = [
+    "pandas>=1.5.0",
+]
 
 # https://peps.python.org/pep-0621/#dependencies-optional-dependencies
 # add dependencies for "extra" features here.  Not dev dependencies.
@@ -43,8 +45,12 @@ dependencies = []
 # name = ["dependency"]
 
 [project.urls]
-homepage = "https://github.com/davidetorre99/alnfile"
-repository = "https://github.com/davidetorre99/alnfile"
+homepage = "https://github.com/teamtomo/alnfile"
+repository = "https://github.com/teamtomo/alnfile"
+documentation = "https://github.com/teamtomo/alnfile#readme"
+changelog = "https://github.com/teamtomo/alnfile#changelog"
+"Bug Tracker" = "https://github.com/teamtomo/alnfile/issues"
+"Source Code" = "https://github.com/teamtomo/alnfile"
 
 # Entry points
 # https://peps.python.org/pep-0621/#entry-points
@@ -75,7 +81,7 @@ alnfile = { workspace = true }
 # https://docs.astral.sh/ruff
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py310"
 src = ["src"]
 fix = true
 # unsafe-fixes = true
