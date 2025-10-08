@@ -1,14 +1,11 @@
 """
 Utilities for converting AreTomo alignment data to IMOD file formats.
 
-Provides functions to export alignment data as.xf and .tlt files.
+Provides functions to convert alignment data to transformation matrices.
 """
 
-from pathlib import Path
 import numpy as np
 import pandas as pd
-
-from .reader import AreTomo3ALN
 
 
 def df_to_xf(df: pd.DataFrame, yx: bool = False) -> np.ndarray:
@@ -67,11 +64,11 @@ def df_to_xf(df: pd.DataFrame, yx: bool = False) -> np.ndarray:
     # Fill transformation matrices
     if yx:
         # YX convention: 
-        xf[:, 0, 0] = A21
-        xf[:, 0, 1] = A22
+        xf[:, 0, 0] = A22
+        xf[:, 0, 1] = A21
         xf[:, 0, 2] = DY
-        xf[:, 1, 0] = A11
-        xf[:, 1, 1] = A12
+        xf[:, 1, 0] = A12
+        xf[:, 1, 1] = A11
         xf[:, 1, 2] = DX
     else:
         # XY convention 
@@ -83,137 +80,3 @@ def df_to_xf(df: pd.DataFrame, yx: bool = False) -> np.ndarray:
         xf[:, 1, 2] = DY
     
     return xf
-
-
-def save_xf(
-    file: Path | str,
-    output_file: Path | str,
-    include_dark: bool = False,
-    yx: bool = False
-) -> None:
-    """
-    Export alignment data to IMOD .xf transformation file.
-    
-    Parameters
-    ----------
-    file : Path | str
-        Input AreTomo .aln file path
-    output_file : Path | str
-        Output .xf file path
-    include_dark : bool, default False
-        If True, include dark frames with identity transformations (all zeros).
-        This creates an .xf file matching the original tilt series size.
-    yx : bool, default False
-        Matrix row ordering (see df_to_xf for details)
-        
-    Notes
-    -----
-    Writes one line per tilt image in format: A11 A12 A21 A22 DX DY
-    Dark frames (when included) get identity transformation: 1 0 0 1 0 0
-    """
-    # Load alignment data
-    aln_data = AreTomo3ALN.from_file(Path(file))
-    global_df = aln_data.get_global_alignments(kind="pandas")
-    
-    # Convert to transformation matrices
-    xf_matrices = df_to_xf(global_df, yx=yx)
-    
-    # Prepare output data
-    if include_dark and aln_data.DarkFrames:
-        # Create a complete list with dark frames as identity transformations
-        # Dark frames have section_idx in original series, GlobalAlignments have sec after removal
-        dark_indices = sorted([df.section_idx for df in aln_data.DarkFrames])
-        
-        # Build complete transformation list
-        all_xf = []
-        global_idx = 0
-        
-
-        total_images = aln_data.RawSize[2] if aln_data.RawSize else (len(xf_matrices) + len(dark_indices))
-        
-        for orig_idx in range(total_images):
-            if orig_idx in dark_indices:
-                # Identity transformation for dark frame
-                all_xf.append(np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]))
-            else:
-                # Use alignment data
-                if global_idx < len(xf_matrices):
-                    all_xf.append(xf_matrices[global_idx])
-                    global_idx += 1
-        
-        xf_matrices = all_xf
-    
-    # Write to file
-    output_path = Path(output_file)
-    with open(output_path, 'w') as f:
-        for matrix in xf_matrices:
-            # Flatten to 6 values: A11 A12 A21 A22 DX DY
-            if yx:
-                # Need to reorder back to standard XF format
-                A21, A22, DY = matrix[0]
-                A11, A12, DX = matrix[1]
-            else:
-                A11, A12, DX = matrix[0]
-                A21, A22, DY = matrix[1]
-            
-            f.write(f"{A11:11.7f} {A12:11.7f} {A21:11.7f} {A22:11.7f} {DX:11.4f} {DY:11.4f}\n")
-
-
-def save_tlt(
-    file: Path | str,
-    output_file: Path | str,
-    include_dark: bool = False
-) -> None:
-    """
-    Export tilt angles to IMOD .tlt file.
-    
-    Parameters
-    ----------
-    file : Path | str
-        Input AreTomo .aln file path
-    output_file : Path | str
-        Output .tlt file path
-    include_dark : bool, default False
-        If True, include dark frames with their original tilt angles.
-        This creates a .tlt file matching the original tilt series size.
-        
-    Notes
-    -----
-    Writes one tilt angle per line in degrees.
-    """
-    # Load alignment data
-    aln_data = AreTomo3ALN.from_file(Path(file))
-    global_df = aln_data.get_global_alignments(kind="pandas")
-    
-    # Prepare tilt angles
-    if include_dark and aln_data.DarkFrames:
-        # Create complete list including dark frame angles
-        dark_frames = sorted(aln_data.DarkFrames, key=lambda x: x.section_idx)
-        dark_dict = {df.section_idx: df.angle for df in dark_frames}
-        
-        # Build complete angle list
-        all_tilts = []
-        global_idx = 0
-        
-        total_images = aln_data.RawSize[2] if aln_data.RawSize else (len(global_df) + len(dark_frames))
-        
-        for orig_idx in range(total_images):
-            if orig_idx in dark_dict:
-                # Use dark frame angle
-                all_tilts.append(dark_dict[orig_idx])
-            else:
-                # Use alignment data
-                if global_idx < len(global_df):
-                    all_tilts.append(global_df.iloc[global_idx]['tilt'])
-                    global_idx += 1
-        
-        tilt_angles = all_tilts
-    else:
-        tilt_angles = global_df['tilt'].values
-    
-    # Write tilt angles
-    output_path = Path(output_file)
-    with open(output_path, 'w') as f:
-        for tilt_angle in tilt_angles:
-            f.write(f"{tilt_angle:8.2f}\n")
-

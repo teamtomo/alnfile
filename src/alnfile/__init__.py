@@ -8,7 +8,7 @@ Attribution:
 
 from importlib.metadata import PackageNotFoundError, version
 
-from .imod_utils import df_to_xf, save_xf, save_tlt
+from .imod_utils import df_to_xf
 from .reader import read
 
 try:
@@ -16,4 +16,4 @@ try:
 except PackageNotFoundError:
     __version__ = "unknown"
 
-__all__ = ["read", "df_to_xf", "save_xf", "save_tlt", "__version__"]
+__all__ = ["read", "df_to_xf", "__version__"]

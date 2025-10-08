@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import alnfile
-from alnfile.imod_utils import df_to_xf, save_xf, save_tlt
+from alnfile.imod_utils import df_to_xf
 
 
 class TestDfToXf:
@@ -89,115 +89,6 @@ class TestDfToXf:
         
         assert abs(xf[0, 0, 2] - expected_dx) < 1e-6  # DX
         assert abs(xf[0, 1, 2] - expected_dy) < 1e-6  # DY
-    
-
-class TestSaveXf:
-    """Test class for save_xf function."""
-    
-    @pytest.fixture
-    def test_data_dir(self):
-        """Return the test data directory."""
-        return Path(__file__).parent
-    
-    @pytest.fixture
-    def file_with_local(self, test_data_dir):
-        """Return path to test file with local alignment."""
-        return test_data_dir / "test_data_with_local.aln"
-    
-    @pytest.fixture
-    def temp_xf_file(self, tmp_path):
-        """Return path for temporary xf file."""
-        return tmp_path / "test.xf"
-    
-    def test_save_xf_creates_file(self, file_with_local, temp_xf_file):
-        """Test that save_xf creates a file."""
-        save_xf(file_with_local, temp_xf_file)
-        assert temp_xf_file.exists()
-    
-    def test_save_xf_file_format(self, file_with_local, temp_xf_file):
-        """Test that saved xf file has correct format."""
-        save_xf(file_with_local, temp_xf_file)
-        
-        # Read the file
-        with open(temp_xf_file, 'r') as f:
-            lines = f.readlines()
-        
-        # Should have lines
-        assert len(lines) > 0
-        
-        # Each line should have 6 floating point numbers
-        for line in lines:
-            parts = line.strip().split()
-            assert len(parts) == 6
-            
-            # All should be valid floats
-            for part in parts:
-                float(part)  # Should not raise
-    
-
-class TestSaveTlt:
-    """Test class for save_tlt function."""
-    
-    @pytest.fixture
-    def test_data_dir(self):
-        """Return the test data directory."""
-        return Path(__file__).parent
-    
-    @pytest.fixture
-    def file_with_local(self, test_data_dir):
-        """Return path to test file with local alignment."""
-        return test_data_dir / "test_data_with_local.aln"
-    
-    @pytest.fixture
-    def temp_tlt_file(self, tmp_path):
-        """Return path for temporary tlt file."""
-        return tmp_path / "test.tlt"
-    
-    def test_save_tlt_creates_file(self, file_with_local, temp_tlt_file):
-        """Test that save_tlt creates a file."""
-        save_tlt(file_with_local, temp_tlt_file)
-        assert temp_tlt_file.exists()
-    
-    def test_save_tlt_file_format(self, file_with_local, temp_tlt_file):
-        """Test that saved tlt file has correct format."""
-        save_tlt(file_with_local, temp_tlt_file)
-        
-        # Read the file
-        with open(temp_tlt_file, 'r') as f:
-            lines = f.readlines()
-        
-        # Should have lines
-        assert len(lines) > 0
-        
-        # Each line should have one floating point number
-        for line in lines:
-            parts = line.strip().split()
-            assert len(parts) == 1
-            
-            # Should be a valid float
-            angle = float(parts[0])
-            
-            # Tilt angles should be in reasonable range
-            assert -90 <= angle <= 90
-    
-    def test_save_tlt_matches_alignment(self, file_with_local, temp_tlt_file):
-        """Test that tlt file matches alignment data."""
-        # Save tlt file
-        save_tlt(file_with_local, temp_tlt_file)
-        
-        # Read alignment data
-        df = alnfile.read(file_with_local, alignment_type="global")
-        
-        # Read tlt file
-        with open(temp_tlt_file, 'r') as f:
-            tlt_angles = [float(line.strip()) for line in f]
-        
-        # Should have same number of tilts
-        assert len(tlt_angles) == len(df)
-        
-        # Angles should match
-        for i, (tlt_angle, df_angle) in enumerate(zip(tlt_angles, df['tilt'].values)):
-            assert abs(tlt_angle - df_angle) < 0.01, f"Mismatch at index {i}"
 
 
 class TestNumpyOutput:
