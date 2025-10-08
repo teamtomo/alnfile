@@ -6,10 +6,14 @@ Attribution:
     https://github.com/uermel/cryoet-alignment/blob/main/src/cryoet_alignment/io/aretomo3/aln.py
 """
 
+from importlib.metadata import PackageNotFoundError, version
 
-from .reader import read
 from .imod_utils import df_to_xf, save_xf, save_tlt
+from .reader import read
 
+try:
+    __version__ = version("alnfile")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
-
-__all__ = ["read", "df_to_xf", "save_xf", "save_tlt"]
+__all__ = ["read", "df_to_xf", "save_xf", "save_tlt", "__version__"]
