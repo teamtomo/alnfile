@@ -6,7 +6,7 @@
 [![CI](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml/badge.svg)](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/teamtomo/alnfile/branch/main/graph/badge.svg)](https://codecov.io/gh/teamtomo/alnfile)
 
-A Python package for reading AreTomo alignment files into pandas DataFrames or numpy arrays, with utilities for exporting to IMOD formats.
+A Python package for reading AreTomo alignment files into pandas DataFrames or numpy arrays, with utilities for converting to IMOD transformation matrices.
 
 ## Installation
 
@@ -54,6 +54,7 @@ local_df = alnfile.read("file.aln", alignment_type="local")
 # Both alignments (default)
 both_df = alnfile.read("file.aln", alignment_type="both")
 # Combined DataFrame
+```
 
 ### NumPy Output
 
@@ -71,31 +72,23 @@ arr = alnfile.read("file.aln", alignment_type="local", output_format="numpy")
 # Returns (n_patches, 7) array with columns: [sec_idx, patch_idx, center_x, center_y, shift_x, shift_y, is_reliable]
 ```
 
-### IMOD Utilities
+### IMOD Transformation Matrices
 
-Export alignment data to IMOD-compatible formats:
+Convert alignment data to IMOD-compatible transformation matrices:
 
 ```python
 import alnfile
 
-# Save transformation file (.xf) for IMOD
-alnfile.save_xf("input.aln", "output.xf")
-
-# Save tilt angles file (.tlt)
-alnfile.save_tlt("input.aln", "output.tlt")
-
-# Include dark frames with identity transformations (1, 0, 0, 1, 0, 0)
-alnfile.save_xf("input.aln", "output_full.xf", include_dark=True)
-alnfile.save_tlt("input.aln", "output_full.tlt", include_dark=True)
-
-# Convert DataFrame to transformation matrices
-import pandas as pd
+# Read alignment data
 df = alnfile.read("file.aln", alignment_type="global")
-xf_matrices = alnfile.df_to_xf(df)  # Returns (n_tilts, 2, 3) array in xy convention
 
-# Use yx convention (swap rows) if needed
-xf_matrices_yx = alnfile.df_to_xf(df, yx=True)  # Returns (n_tilts, 2, 3) array in yx convention
-alnfile.save_xf("input.aln", "output.xf", yx=True)  # Save with yx convention
+# Convert DataFrame to transformation matrices (IMOD .xf format)
+xf_matrices = alnfile.df_to_xf(df)  # Returns (n_tilts, 2, 3) array
+# Each matrix is [[A11, A12, DX], [A21, A22, DY]]
+
+# Use yx convention (swap rows) if needed for specific applications
+xf_matrices_yx = alnfile.df_to_xf(df, yx=True)  # Returns (n_tilts, 2, 3) array
+# Each matrix is [[A22, A21, DY], [A12, A11, DX]]
 ```
 
 ### Data Structure
