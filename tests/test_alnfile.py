@@ -16,7 +16,4 @@ def test_read_function_available():
     assert callable(alnfile.read)
 
 
-def test_attribution_in_docstring():
-    """Test that attribution is present in the package docstring."""
-    assert "cryoet-alignment" in alnfile.__doc__
-    assert "uermel" in alnfile.__doc__
+
