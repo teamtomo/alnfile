@@ -8,6 +8,10 @@ Attribution:
 
 from importlib.metadata import PackageNotFoundError, version
 
+from .df_utils import (
+    global_alignments_to_dataframe,
+    local_alignments_to_dataframe,
+)
 from .imod_utils import df_to_xf
 from .io import read
 
@@ -19,5 +23,7 @@ except PackageNotFoundError:
 __all__ = [
     "read",
     "df_to_xf",
-    "__version__"
+    "global_alignments_to_dataframe",
+    "local_alignments_to_dataframe",
+    "__version__",
 ]

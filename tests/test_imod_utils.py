@@ -1,12 +1,4 @@
-"""
-Simple tests to double check teh basic of  IMOD utility functions (df_to_xf, save_xf, save_tlt).
-"""
-
-import pytest
 import numpy as np
-import pandas as pd
-import sys
-from pathlib import Path
 
 import alnfile
 

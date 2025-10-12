@@ -22,9 +22,11 @@ def test_import():
     assert callable(alnfile.read)
 
 
-def test_read_global_only_with_local_file(file_with_local):
-    """Test reading only global alignments from file with local alignment."""
-    df = alnfile.read(file_with_local, alignment_type="global")
+@pytest.mark.parametrize("file_fixture", ["file_with_local", "file_no_local"])
+def test_read_global_alignments(file_fixture, request):
+    """Test reading only global alignments from both file types."""
+    file = request.getfixturevalue(file_fixture)
+    df = alnfile.read(file, alignment_type="global")
 
     # Check basic structure
     assert isinstance(df, pd.DataFrame)
@@ -40,20 +42,7 @@ def test_read_global_only_with_local_file(file_with_local):
         assert pd.api.types.is_numeric_dtype(df[col])
 
 
-def test_read_global_only_no_local_file(file_no_local):
-    """Test reading only global alignments from file without local alignment."""
-    df = alnfile.read(file_no_local, alignment_type="global")
-
-    # Check basic structure
-    assert isinstance(df, pd.DataFrame)
-    assert len(df) > 0
-
-    # Check columns
-    expected_cols = ['sec', 'rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt']
-    assert list(df.columns) == expected_cols
-
-
-def test_read_local_only_with_local_file(file_with_local):
+def test_read_local_alignments(file_with_local):
     """Test reading only local alignments from file with local alignment."""
     df = alnfile.read(file_with_local, alignment_type="local")
 
@@ -72,7 +61,7 @@ def test_read_local_only_with_local_file(file_with_local):
         assert pd.api.types.is_numeric_dtype(df[col])
 
 
-def test_read_local_only_no_local_file(file_no_local):
+def test_read_local_raises_if_not_present(file_no_local):
     with pytest.raises(ValueError, match="Local alignment has not been performed"):
         alnfile.read(file_no_local, alignment_type="local")
 
