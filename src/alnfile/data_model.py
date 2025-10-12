@@ -1,25 +1,9 @@
-"""
-Parser for AreTomo3 alignment file format (.aln).
-
-Provides functionality to load, and export alignment data from
-AreTomo tilt series alignment.
-
-Attribution:
-    This implementation is based on the original work from the cryoet-alignment repository of Utz H. Ermel:
-    https://github.com/uermel/cryoet-alignment/blob/main/src/cryoet_alignment/io/aretomo3/aln.py
-    
-    Original author: Utz H. Ermel
-    Original license: MIT License
-    
-"""
-
 from pathlib import Path
 from typing import Literal
+
 import numpy as np
 import pandas as pd
-import warnings
 
-# Define all column names
 GLOBAL_COLUMNS = ['sec', 'rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt']
 LOCAL_COLUMNS = ['sec_idx', 'patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']
 
@@ -39,13 +23,14 @@ class GlobalAlignmentInfo:
         base (float): (implementation-specific, see AreTomo docs).
         tilt (float): Nominal tilt angle (degrees).
     """
-    
+
     __slots__ = ('sec', 'rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt')
-    
+
     FIELD_NAMES = GLOBAL_COLUMNS
 
-    def __init__(self, sec: int, rot: float, gmag: float = 1.0, tx: float = 0.0, ty: float = 0.0, 
-                 smean: float = 1.0, sfit: float = 1.0, scale: float = 1.0, base: float = 0.0, tilt: float = 0.0):
+    def __init__(self, sec: int, rot: float, gmag: float = 1.0, tx: float = 0.0, ty: float = 0.0,
+                 smean: float = 1.0, sfit: float = 1.0, scale: float = 1.0, base: float = 0.0, tilt: float = 0.0
+                 ):
         self.sec = sec
         self.rot = rot
         self.gmag = gmag
@@ -97,7 +82,7 @@ class GlobalAlignmentInfo:
             f"{self.base:>9.2f}"
             f"{self.tilt:>10.2f}"
         )
-    
+
     def __repr__(self):
         return (f"GlobalAlignmentInfo(sec={self.sec}, rot={self.rot:.4f}, "
                 f"tx={self.tx:.3f}, ty={self.ty:.3f}, tilt={self.tilt:.2f})")
@@ -111,7 +96,7 @@ class DarkFrameInfo:
         val2 (int): One-indexed position.
         angle (float): Nominal tilt angle for the excluded image (degrees).
     """
-    
+
     __slots__ = ('section_idx', 'val2', 'angle')
 
     def __init__(self, section_idx: int, val2: int, angle: float):
@@ -133,7 +118,7 @@ class DarkFrameInfo:
 
     def __str__(self):
         return f"# DarkFrame ={self.section_idx:>6}{self.val2:>5}{self.angle:>9.2f}"
-    
+
     def __repr__(self):
         return f"DarkFrameInfo(section_idx={self.section_idx}, val2={self.val2}, angle={self.angle:.2f})"
 
@@ -150,13 +135,14 @@ class LocalAlignmentInfo:
         shift_y (float): Measured y deviation from expected patch position (pixels).
         is_reliable (float): Confidence flag for patch alignment quality (1.0=reliable, 0.0=unreliable).
     """
-    
+
     __slots__ = ('sec_idx', 'patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable')
-    
+
     FIELD_NAMES = LOCAL_COLUMNS
 
-    def __init__(self, sec_idx: int, patch_idx: int, center_x: float, center_y: float, 
-                 shift_x: float, shift_y: float, is_reliable: float):
+    def __init__(self, sec_idx: int, patch_idx: int, center_x: float, center_y: float,
+                 shift_x: float, shift_y: float, is_reliable: float
+                 ):
         self.sec_idx = sec_idx
         self.patch_idx = patch_idx
         self.center_x = center_x
@@ -207,7 +193,7 @@ class LocalAlignmentInfo:
             f"{self.shift_y:>10.2f}"
             f"{self.is_reliable:>6.1f}"
         )
-    
+
     def __repr__(self):
         return (f"LocalAlignmentInfo(sec_idx={self.sec_idx}, patch_idx={self.patch_idx}, "
                 f"shift_x={self.shift_x:.2f}, shift_y={self.shift_y:.2f})")
@@ -227,11 +213,12 @@ class AreTomo3ALN:
         LocalAlignments (list[LocalAlignmentInfo]): Per-patch deformation measurements.
     """
 
-    def __init__(self, header: str | None = None, RawSize: tuple[int, int, int] | None = None, 
+    def __init__(self, header: str | None = None, RawSize: tuple[int, int, int] | None = None,
                  NumPatches: int = 0, DarkFrames: list[DarkFrameInfo] | None = None,
-                 AlphaOffset: float = 0.0, BetaOffset: float = 0.0, 
+                 AlphaOffset: float = 0.0, BetaOffset: float = 0.0,
                  GlobalAlignments: list[GlobalAlignmentInfo] | None = None,
-                 LocalAlignments: list[LocalAlignmentInfo] | None = None):
+                 LocalAlignments: list[LocalAlignmentInfo] | None = None
+                 ):
         self.header = header or "# AreTomo Alignment / Priims bprmMn"
         self.RawSize = RawSize or (0, 0, 0)
         self.NumPatches = NumPatches
@@ -266,7 +253,7 @@ class AreTomo3ALN:
                 elif section == "LocalAlignment":
                     local_alignments.append(LocalAlignmentInfo.from_string(line))
                 continue
-            
+
             if line.startswith("# DarkFrame"):
                 dark_frames.append(DarkFrameInfo.from_string(line))
             elif line.startswith("# SEC"):
@@ -312,75 +299,51 @@ class AreTomo3ALN:
             f"{local_alignments}\n"
         )
 
-    def get_global_alignments(
-        self,
-        kind: Literal["pandas", "numpy"] = "pandas",
-    ) -> pd.DataFrame | np.ndarray:
-        """Extract global alignment data in tabular or array format.
-
-        Args:
-            kind (str): Output format - "pandas" for DataFrame, "numpy" for ndarray.
-
-        Returns:
-            pd.DataFrame | np.ndarray: Alignment data with columns/fields:
-                [sec, rot, gmag, tx, ty, smean, sfit, scale, base, tilt]
-        """
-        columns = GLOBAL_COLUMNS
-        
+    def get_global_alignments(self) -> pd.DataFrame:
+        """Extract global alignment data as dataframe."""
         if not self.GlobalAlignments:
-            if kind == "numpy":
-                return np.empty((0, 10), dtype=np.float64)
-            return pd.DataFrame(columns=columns)
-        
-        if kind == "numpy":
-            data = np.array(
-                [[ga.sec, ga.rot, ga.gmag, ga.tx, ga.ty, ga.smean, ga.sfit, ga.scale, ga.base, ga.tilt]
-                 for ga in self.GlobalAlignments],
-                dtype=np.float64
-            )
-            return data
-        elif kind == "pandas":
-            data = {
-                'sec': np.array([ga.sec for ga in self.GlobalAlignments], dtype=np.int64),
-                'rot': np.array([ga.rot for ga in self.GlobalAlignments], dtype=np.float64),
-                'gmag': np.array([ga.gmag for ga in self.GlobalAlignments], dtype=np.float64),
-                'tx': np.array([ga.tx for ga in self.GlobalAlignments], dtype=np.float64),
-                'ty': np.array([ga.ty for ga in self.GlobalAlignments], dtype=np.float64),
-                'smean': np.array([ga.smean for ga in self.GlobalAlignments], dtype=np.float64),
-                'sfit': np.array([ga.sfit for ga in self.GlobalAlignments], dtype=np.float64),
-                'scale': np.array([ga.scale for ga in self.GlobalAlignments], dtype=np.float64),
-                'base': np.array([ga.base for ga in self.GlobalAlignments], dtype=np.float64),
-                'tilt': np.array([ga.tilt for ga in self.GlobalAlignments], dtype=np.float64),
-            }
-            return pd.DataFrame(data)
-        else:
-            raise ValueError(f"kind must be 'pandas' or 'numpy', got '{kind}'")
+            raise ValueError("No global alignments found")
+        data = {
+            'sec': np.array([ga.sec for ga in self.GlobalAlignments], dtype=np.int64),
+            'rot': np.array([ga.rot for ga in self.GlobalAlignments], dtype=np.float64),
+            'gmag': np.array([ga.gmag for ga in self.GlobalAlignments], dtype=np.float64),
+            'tx': np.array([ga.tx for ga in self.GlobalAlignments], dtype=np.float64),
+            'ty': np.array([ga.ty for ga in self.GlobalAlignments], dtype=np.float64),
+            'smean': np.array([ga.smean for ga in self.GlobalAlignments], dtype=np.float64),
+            'sfit': np.array([ga.sfit for ga in self.GlobalAlignments], dtype=np.float64),
+            'scale': np.array([ga.scale for ga in self.GlobalAlignments], dtype=np.float64),
+            'base': np.array([ga.base for ga in self.GlobalAlignments], dtype=np.float64),
+            'tilt': np.array([ga.tilt for ga in self.GlobalAlignments], dtype=np.float64),
+        }
+        return pd.DataFrame(data)
 
-    def set_global_alignments(self, value: pd.DataFrame):
+
+    def set_global_alignments(self, df: pd.DataFrame):
         """
         Set the global alignments from a pandas DataFrame.
 
         Args:
-            value (pd.DataFrame): Global alignments as a pandas DataFrame.
+            df (pd.DataFrame): Global alignments as a pandas DataFrame.
         """
-        if not isinstance(value, pd.DataFrame):
+        if not isinstance(df, pd.DataFrame):
             raise ValueError("Invalid value type. Must be pandas.DataFrame")
-        
+
         self.GlobalAlignments = [
             GlobalAlignmentInfo(
-                sec=int(rec['sec']), 
-                rot=float(rec['rot']), 
+                sec=int(rec['sec']),
+                rot=float(rec['rot']),
                 gmag=float(rec['gmag']),
-                tx=float(rec['tx']), 
-                ty=float(rec['ty']), 
+                tx=float(rec['tx']),
+                ty=float(rec['ty']),
                 smean=float(rec['smean']),
-                sfit=float(rec['sfit']), 
-                scale=float(rec['scale']), 
-                base=float(rec['base']), 
+                sfit=float(rec['sfit']),
+                scale=float(rec['scale']),
+                base=float(rec['base']),
                 tilt=float(rec['tilt'])
             )
-            for rec in value.to_dict('records')
+            for rec in df.to_dict('records')
         ]
+
 
     def get_local_alignments(
         self,
@@ -396,12 +359,12 @@ class AreTomo3ALN:
                 [sec_idx, patch_idx, center_x, center_y, shift_x, shift_y, is_reliable]
         """
         columns = LOCAL_COLUMNS
-        
+
         if not self.LocalAlignments:
             if kind == "numpy":
                 return np.empty((0, 7), dtype=np.float64)
             return pd.DataFrame(columns=columns)
-        
+
         if kind == "numpy":
             data = np.array(
                 [[la.sec_idx, la.patch_idx, la.center_x, la.center_y, la.shift_x, la.shift_y, la.is_reliable]
@@ -423,6 +386,7 @@ class AreTomo3ALN:
         else:
             raise ValueError(f"kind must be 'pandas' or 'numpy', got '{kind}'")
 
+
     def set_local_alignments(self, values: pd.DataFrame):
         """
         Set the local alignments from a pandas DataFrame.
@@ -432,48 +396,32 @@ class AreTomo3ALN:
         """
         if not isinstance(values, pd.DataFrame):
             raise ValueError("Invalid value type. Must be pandas.DataFrame")
-        
+
         self.LocalAlignments = [
             LocalAlignmentInfo(
-                sec_idx=int(rec['sec_idx']), 
+                sec_idx=int(rec['sec_idx']),
                 patch_idx=int(rec['patch_idx']),
-                center_x=float(rec['center_x']), 
+                center_x=float(rec['center_x']),
                 center_y=float(rec['center_y']),
-                shift_x=float(rec['shift_x']), 
+                shift_x=float(rec['shift_x']),
                 shift_y=float(rec['shift_y']),
                 is_reliable=float(rec['is_reliable'])
             )
             for rec in values.to_dict('records')
         ]
 
-    def pandas(self) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """
-        Convenience method to retrieve both alignment types as DataFrames.
 
-        Returns:
-            tuple[pd.DataFrame, pd.DataFrame]: (global_alignments, local_alignments)
-        """
-        return self.get_global_alignments(kind="pandas"), self.get_local_alignments(kind="pandas")
-
-    def numpy(self) -> tuple[np.ndarray, np.ndarray]:
-        """
-        Convenience method to retrieve both alignment types as numpy arrays.
-
-        Returns:
-            tuple[np.ndarray, np.ndarray]: (global_alignments, local_alignments)
-        """
-        return self.get_global_alignments(kind="numpy"), self.get_local_alignments(kind="numpy")
 
     @classmethod
     def from_file(cls, file_path: Path) -> "AreTomo3ALN":
         """Load AreTomo3ALN from a file.
-        
+
         Args:
             file_path: Path to the .aln file
-            
+
         Returns:
             AreTomo3ALN object with parsed alignment data
-            
+
         Raises:
             FileNotFoundError: If file doesn't exist
             UnicodeDecodeError: If file has encoding issues
@@ -486,125 +434,3 @@ class AreTomo3ALN:
             with open(file_path, 'r', encoding='latin-1') as f:
                 content = f.read()
         return cls.from_string(content)
-
-
-def read(
-    file: Path | str,
-    alignment_type: Literal["both", "global", "local"] = "both",
-    output_format: Literal["pandas", "numpy"] = "pandas"
-) -> pd.DataFrame | np.ndarray:
-    """
-    Load AreTomo .aln file and extract alignment data.
-    
-    Parameters
-    ----------
-    file : Path | str
-        Filesystem path to the .aln alignment file
-    alignment_type : {"both", "global", "local"}, default "both"
-        Which alignment data to extract:
-        - "global": Per-tilt rigid transformations only
-        - "local": Per-patch deformation data only
-        - "both": Combined view with type indicator column
-    output_format : {"pandas", "numpy"}, default "pandas"
-        Return format (DataFrame vs ndarray)
-        
-    Returns
-    -------
-    pd.DataFrame | np.ndarray
-        Alignment parameters. When alignment_type="both", includes a 'type' column.
-        
-    Raises
-    ------
-    ValueError
-        Invalid alignment_type, missing file, or unreadable file
-    """
-    
-    # Validate if file exists
-    file = Path(file)
-    if not file.exists():
-        raise ValueError(f"File does not exist: {file}")
-    if not file.is_file():
-        raise ValueError(f"Path is not a file: {file}")
-        
-    # Load the alignment data
-    aln_data = AreTomo3ALN.from_file(file)
-    
-    # Check if local alignment data is available
-    has_local_alignment = aln_data.NumPatches > 0 and len(aln_data.LocalAlignments) > 0
-    
-    match alignment_type:
-        case "global":
-            return aln_data.get_global_alignments(kind=output_format)
-        case "local":
-            if not has_local_alignment:
-                warnings.warn("Probably local alignment has not been performed (NumPatches=0 or no local alignment data found).")
-                if output_format == "numpy":
-                    return np.empty((0, 7), dtype=np.float64)
-                return pd.DataFrame(columns=LOCAL_COLUMNS)
-            return aln_data.get_local_alignments(kind=output_format)
-        case "both":
-            if output_format == "numpy":
-                raise ValueError("output_format='numpy' is not supported for alignment_type='both'. Use 'global' or 'local' instead.")
-            
-            global_df = aln_data.get_global_alignments(kind="pandas")
-            
-            #  case where local alignment is not available
-            if not has_local_alignment:
-                warnings.warn("Probably local alignment has not been performed (NumPatches=0 or no local alignment data found). Returning only global alignments.")
-                global_df['type'] = 'global'
-                # Add empty columns for local alignment data
-                for col in ['patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']:
-                    global_df[col] = None
-                return global_df
-            
-            local_df = aln_data.get_local_alignments(kind="pandas")
-            
-            combined_data = []
-            
-            # Add global alignments
-            for rec in global_df.to_dict('records'):
-                combined_data.append({
-                    'type': 'global',
-                    'sec': rec['sec'],
-                    'rot': rec['rot'],
-                    'gmag': rec['gmag'],
-                    'tx': rec['tx'],
-                    'ty': rec['ty'],
-                    'smean': rec['smean'],
-                    'sfit': rec['sfit'],
-                    'scale': rec['scale'],
-                    'base': rec['base'],
-                    'tilt': rec['tilt'],
-                    'patch_idx': None,
-                    'center_x': None,
-                    'center_y': None,
-                    'shift_x': None,
-                    'shift_y': None,
-                    'is_reliable': None
-                })
-            
-            # Add local alignments
-            for rec in local_df.to_dict('records'):
-                combined_data.append({
-                    'type': 'local',
-                    'sec': rec['sec_idx'], 
-                    'rot': None,
-                    'gmag': None,
-                    'tx': None,
-                    'ty': None,
-                    'smean': None,
-                    'sfit': None,
-                    'scale': None,
-                    'base': None,
-                    'tilt': None,
-                    'patch_idx': rec['patch_idx'],
-                    'center_x': rec['center_x'],
-                    'center_y': rec['center_y'],
-                    'shift_x': rec['shift_x'],
-                    'shift_y': rec['shift_y'],
-                    'is_reliable': rec['is_reliable']
-                })
-            
-            return pd.DataFrame(combined_data)
-        case _:
-            raise ValueError("alignment_type must be one of 'both', 'global', or 'local'")

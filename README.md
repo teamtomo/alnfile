@@ -6,7 +6,8 @@
 [![CI](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml/badge.svg)](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/teamtomo/alnfile/branch/main/graph/badge.svg)](https://codecov.io/gh/teamtomo/alnfile)
 
-A Python package for reading AreTomo alignment files into pandas DataFrames or numpy arrays, with utilities for converting to IMOD transformation matrices.
+A Python package for reading AreTomo alignment files into pandas DataFrames or numpy arrays, with utilities for
+converting to IMOD transformation matrices.
 
 ## Installation
 
@@ -56,22 +57,6 @@ both_df = alnfile.read("file.aln", alignment_type="both")
 # Combined DataFrame
 ```
 
-### NumPy Output
-
-Output can also be exported as numpy arrays instead of pandas DataFrames:
-
-```python
-import alnfile
-
-# Get global alignments as numpy array
-arr = alnfile.read("file.aln", alignment_type="global", output_format="numpy")
-# Returns (n_tilts, 10) array with columns: [sec, rot, gmag, tx, ty, smean, sfit, scale, base, tilt]
-
-# Get local alignments as numpy array
-arr = alnfile.read("file.aln", alignment_type="local", output_format="numpy")
-# Returns (n_patches, 7) array with columns: [sec_idx, patch_idx, center_x, center_y, shift_x, shift_y, is_reliable]
-```
-
 ### IMOD Transformation Matrices
 
 Convert alignment data to IMOD-compatible transformation matrices:
@@ -94,31 +79,34 @@ xf_matrices_yx = alnfile.df_to_xf(df, yx=True)  # Returns (n_tilts, 2, 3) array
 ### Data Structure
 
 #### Global Alignment DataFrame
-| Column | Type | Description |
-|--------|------|-------------|
-| sec | int | Zero-indexed position in the final aligned stack (excludes dark frames) |
-| rot | float | Rotation angle of the tilt axis relative to Y-axis (degrees) |
-| gmag | float | Global magnification adjustment factor |
-| tx | float | X shift (pixels) |
-| ty | float | Y shift (pixels) |
-| smean | float | Statistical metric (implementation-specific, see AreTomo docs) |
-| sfit | float | Statistical metric (implementation-specific, see AreTomo docs) |
-| scale | float | Scaling parameter for this tilt |
-| base | float | Implementation-specific parameter (see AreTomo docs) |
-| tilt | float | Nominal tilt angle (degrees) |
+
+| Column | Type  | Description                                                             |
+|--------|-------|-------------------------------------------------------------------------|
+| sec    | int   | Zero-indexed position in the final aligned stack (excludes dark frames) |
+| rot    | float | Rotation angle of the tilt axis relative to Y-axis (degrees)            |
+| gmag   | float | Global magnification adjustment factor                                  |
+| tx     | float | X shift (pixels)                                                        |
+| ty     | float | Y shift (pixels)                                                        |
+| smean  | float | Statistical metric (implementation-specific, see AreTomo docs)          |
+| sfit   | float | Statistical metric (implementation-specific, see AreTomo docs)          |
+| scale  | float | Scaling parameter for this tilt                                         |
+| base   | float | Implementation-specific parameter (see AreTomo docs)                    |
+| tilt   | float | Nominal tilt angle (degrees)                                            |
 
 #### Local Alignment DataFrame
-| Column | Type | Description |
-|--------|------|-------------|
-| sec_idx | int | Tilt position in final tilt series stack, zero-indexed (post dark frame removal) |
-| patch_idx | int | Sequential patch identifier within this tilt image (zero-indexed) |
-| center_x | float | Expected x position of patch center relative to image center (pixels) |
-| center_y | float | Expected y position of patch center relative to image center (pixels) |
-| shift_x | float | Measured x deviation from expected patch position (pixels) |
-| shift_y | float | Measured y deviation from expected patch position (pixels) |
-| is_reliable | float | Confidence flag for patch alignment quality (1.0=reliable, 0.0=unreliable) |
+
+| Column      | Type  | Description                                                                      |
+|-------------|-------|----------------------------------------------------------------------------------|
+| sec_idx     | int   | Tilt position in final tilt series stack, zero-indexed (post dark frame removal) |
+| patch_idx   | int   | Sequential patch identifier within this tilt image (zero-indexed)                |
+| center_x    | float | Expected x position of patch center relative to image center (pixels)            |
+| center_y    | float | Expected y position of patch center relative to image center (pixels)            |
+| shift_x     | float | Measured x deviation from expected patch position (pixels)                       |
+| shift_y     | float | Measured y deviation from expected patch position (pixels)                       |
+| is_reliable | float | Confidence flag for patch alignment quality (1.0=reliable, 0.0=unreliable)       |
 
 #### Combined DataFrame (alignment_type="both")
+
 Contains all columns from both global and local alignments, plus:
 | Column | Type | Description |
 |--------|------|-------------|
@@ -128,4 +116,6 @@ Rows will have `None` values for columns not applicable to their type.
 
 ## Attribution
 
-This implementation has been adapted from a similar reader in [cryoet-alignment repository](https://github.com/uermel/cryoet-alignment/blob/main/src/cryoet_alignment/io/aretomo3/aln.py) by **Utz H. Ermel** (@uermel).
+This implementation has been adapted from a similar reader
+in [cryoet-alignment repository](https://github.com/uermel/cryoet-alignment/blob/main/src/cryoet_alignment/io/aretomo3/aln.py)
+by **Utz H. Ermel** (@uermel).

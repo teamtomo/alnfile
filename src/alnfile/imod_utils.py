@@ -1,7 +1,5 @@
 """
-Utilities for converting AreTomo alignment data to IMOD file formats.
-
-Provides functions to convert alignment data to transformation matrices.
+Functions to convert AreTomo alignment data to IMOD XF transformation matrices.
 """
 
 import numpy as np
