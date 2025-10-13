@@ -6,7 +6,7 @@
 [![CI](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml/badge.svg)](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/teamtomo/alnfile/branch/main/graph/badge.svg)](https://codecov.io/gh/teamtomo/alnfile)
 
-A Python package for reading AreTomo alignment files into pandas DataFrames or numpy arrays, with utilities for
+A Python package for reading AreTomo alignment files into pandas DataFrames, with utilities for
 converting to IMOD transformation matrices.
 
 ## Installation
@@ -15,46 +15,26 @@ converting to IMOD transformation matrices.
 pip install alnfile
 ```
 
-## Quick Start
+## Quick start
 
-```python
-import alnfile
-from pathlib import Path
-
-# Read all alignment data (default behavior)
-df = alnfile.read("your_file.aln")
-
-# Read only global alignments
-global_df = alnfile.read("your_file.aln", alignment_type="global")
-
-# Read only local alignments
-local_df = alnfile.read("your_file.aln", alignment_type="local")
-```
-
-## Usage
-
-### Basic Usage
+### Basic usage 
 
 The main function is `alnfile.read()` which accepts a file path and an optional alignment type:
 
 ```python
 import alnfile
 
-# Read both global and local alignments (default)
-df = alnfile.read("path/to/your/file.aln")
-print(df.head())
-
-# Global alignments only
-global_df = alnfile.read("file.aln", alignment_type="global")
+# Read either global or local alignments (default global)
+global_df = alnfile.read("path/to/your/file.aln")
+print(global_df.head())
 # Columns: sec, rot, gmag, tx, ty, smean, sfit, scale, base, tilt
 
-# Local alignments only  
+# Local alignments   
 local_df = alnfile.read("file.aln", alignment_type="local")
+print(local_df.head())
 # Columns: sec_idx, patch_idx, center_x, center_y, shift_x, shift_y, is_reliable
 
-# Both alignments (default)
-both_df = alnfile.read("file.aln", alignment_type="both")
-# Combined DataFrame
+
 ```
 
 ### IMOD Transformation Matrices
@@ -65,7 +45,7 @@ Convert alignment data to IMOD-compatible transformation matrices:
 import alnfile
 
 # Read alignment data
-df = alnfile.read("file.aln", alignment_type="global")
+df = alnfile.read("path/to/your/file.aln")
 
 # Convert DataFrame to transformation matrices (IMOD .xf format)
 xf_matrices = alnfile.df_to_xf(df)  # Returns (n_tilts, 2, 3) array
@@ -76,7 +56,7 @@ xf_matrices_yx = alnfile.df_to_xf(df, yx=True)  # Returns (n_tilts, 2, 3) array
 # Each matrix is [[A22, A21, DY], [A12, A11, DX]]
 ```
 
-### Data Structure
+## Data Structure
 
 #### Global Alignment DataFrame
 
@@ -105,12 +85,6 @@ xf_matrices_yx = alnfile.df_to_xf(df, yx=True)  # Returns (n_tilts, 2, 3) array
 | shift_y     | float | Measured y deviation from expected patch position (pixels)                       |
 | is_reliable | float | Confidence flag for patch alignment quality (1.0=reliable, 0.0=unreliable)       |
 
-#### Combined DataFrame (alignment_type="both")
-
-Contains all columns from both global and local alignments, plus:
-| Column | Type | Description |
-|--------|------|-------------|
-| type | str | Either 'global' or 'local' |
 
 Rows will have `None` values for columns not applicable to their type.
 
