@@ -6,12 +6,8 @@
 [![CI](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml/badge.svg)](https://github.com/teamtomo/alnfile/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/teamtomo/alnfile/branch/main/graph/badge.svg)](https://codecov.io/gh/teamtomo/alnfile)
 
-A Python package for reading AreTomo alignment files into pandas DataFrames.
-
-## Requirements
-
-- Python 3.10 or later
-- pandas >= 1.5.0
+A Python package for reading AreTomo alignment files into pandas DataFrames, with utilities for
+converting to IMOD transformation matrices.
 
 ## Installation
 
@@ -19,85 +15,81 @@ A Python package for reading AreTomo alignment files into pandas DataFrames.
 pip install alnfile
 ```
 
-## Quick Start
+## Quick start
 
-```python
-import alnfile
-from pathlib import Path
-
-# Read all alignment data (default behavior)
-df = alnfile.read("your_file.aln")
-
-# Read only global alignments
-global_df = alnfile.read("your_file.aln", alignment_type="global")
-
-# Read only local alignments
-local_df = alnfile.read("your_file.aln", alignment_type="local")
-```
-
-## Usage
-
-### Basic Usage
+### Basic usage 
 
 The main function is `alnfile.read()` which accepts a file path and an optional alignment type:
 
 ```python
 import alnfile
 
-# Read both global and local alignments (default)
-df = alnfile.read("path/to/your/file.aln")
-print(df.head())
-
-# Global alignments only
-global_df = alnfile.read("file.aln", alignment_type="global")
+# Read either global or local alignments (default global)
+global_df = alnfile.read("path/to/your/file.aln")
+print(global_df.head())
 # Columns: sec, rot, gmag, tx, ty, smean, sfit, scale, base, tilt
 
-# Local alignments only  
+# Local alignments   
 local_df = alnfile.read("file.aln", alignment_type="local")
+print(local_df.head())
 # Columns: sec_idx, patch_idx, center_x, center_y, shift_x, shift_y, is_reliable
 
-# Both alignments (default)
-both_df = alnfile.read("file.aln", alignment_type="both")
-# Combined DataFrame with 'type' column indicating 'global' or 'local'
+
 ```
 
-### Data Structure
+### IMOD Transformation Matrices
+
+Convert alignment data to IMOD-compatible transformation matrices:
+
+```python
+import alnfile
+
+# Read alignment data
+df = alnfile.read("path/to/your/file.aln")
+
+# Convert DataFrame to transformation matrices (IMOD .xf format)
+xf_matrices = alnfile.df_to_xf(df)  # Returns (n_tilts, 2, 3) array
+# Each matrix is [[A11, A12, DX], [A21, A22, DY]]
+
+# Use yx convention (swap rows) if needed for specific applications
+xf_matrices_yx = alnfile.df_to_xf(df, yx=True)  # Returns (n_tilts, 2, 3) array
+# Each matrix is [[A22, A21, DY], [A12, A11, DX]]
+```
+
+## Data Structure
 
 #### Global Alignment DataFrame
-| Column | Type | Description |
-|--------|------|-------------|
-| sec | int | Section index (0-based, after dark frame removal) |
-| rot | float | Tilt axis rotation angle (degrees) |
-| gmag | float | Magnification change |
-| tx | float | X translation (pixels) |
-| ty | float | Y translation (pixels) |
-| smean | float | TBD |
-| sfit | float | TBD |
-| scale | float | TBD |
-| base | float | TBD |
-| tilt | float | Tilt angle (degrees) |
+
+| Column | Type  | Description                                                             |
+|--------|-------|-------------------------------------------------------------------------|
+| sec    | int   | Zero-indexed position in the final aligned stack (excludes dark frames) |
+| rot    | float | Rotation angle of the tilt axis relative to Y-axis (degrees)            |
+| gmag   | float | Global magnification adjustment factor                                  |
+| tx     | float | X shift (pixels)                                                        |
+| ty     | float | Y shift (pixels)                                                        |
+| smean  | float | Statistical metric (implementation-specific, see AreTomo docs)          |
+| sfit   | float | Statistical metric (implementation-specific, see AreTomo docs)          |
+| scale  | float | Scaling parameter for this tilt                                         |
+| base   | float | Implementation-specific parameter (see AreTomo docs)                    |
+| tilt   | float | Nominal tilt angle (degrees)                                            |
 
 #### Local Alignment DataFrame
-| Column | Type | Description |
-|--------|------|-------------|
-| sec_idx | int | Section index (0-based, after dark frame removal) |
-| patch_idx | int | Patch index (0-based) |
-| center_x | float | Projected X coordinate of patch center |
-| center_y | float | Projected Y coordinate of patch center |
-| shift_x | float | X shift from expected patch center |
-| shift_y | float | Y shift from expected patch center |
-| is_reliable | float | Reliability flag |
 
-#### Combined DataFrame (alignment_type="both")
-Contains all columns from both global and local alignments, plus:
-| Column | Type | Description |
-|--------|------|-------------|
-| type | str | Either 'global' or 'local' |
+| Column      | Type  | Description                                                                      |
+|-------------|-------|----------------------------------------------------------------------------------|
+| sec_idx     | int   | Tilt position in final tilt series stack, zero-indexed (post dark frame removal) |
+| patch_idx   | int   | Sequential patch identifier within this tilt image (zero-indexed)                |
+| center_x    | float | Expected x position of patch center relative to image center (pixels)            |
+| center_y    | float | Expected y position of patch center relative to image center (pixels)            |
+| shift_x     | float | Measured x deviation from expected patch position (pixels)                       |
+| shift_y     | float | Measured y deviation from expected patch position (pixels)                       |
+| is_reliable | float | Confidence flag for patch alignment quality (1.0=reliable, 0.0=unreliable)       |
+
 
 Rows will have `None` values for columns not applicable to their type.
 
 ## Attribution
 
-This implementation is based on the original [cryoet-alignment repository](https://github.com/uermel/cryoet-alignment/blob/main/src/cryoet_alignment/io/aretomo3/aln.py) by **Utz H. Ermel**.
-
-The original code is licensed under the MIT License. This implementation has been adapted and simplified to remove external dependencies and provide a more focused interface for reading AreTomo alignment files.
+This implementation has been adapted from a similar reader
+in [cryoet-alignment repository](https://github.com/uermel/cryoet-alignment/blob/main/src/cryoet_alignment/io/aretomo3/aln.py)
+by **Utz H. Ermel** (@uermel).

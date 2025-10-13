@@ -6,19 +6,24 @@ Attribution:
     https://github.com/uermel/cryoet-alignment/blob/main/src/cryoet_alignment/io/aretomo3/aln.py
 """
 
-try:
-    from importlib.metadata import PackageNotFoundError, version
-except ImportError:
-    # Fallback for systems with older Python (development/testing only)
-    # Production requires Python 3.10+
-    from importlib_metadata import PackageNotFoundError, version
+from importlib.metadata import PackageNotFoundError, version
 
-from .reader import read
+from .df_utils import (
+    global_alignments_to_dataframe,
+    local_alignments_to_dataframe,
+)
+from .imod_utils import df_to_xf
+from .io import read
 
 try:
     __version__ = version("alnfile")
 except PackageNotFoundError:
-    __version__ = "uninstalled"
+    __version__ = "unknown"
 
-
-__all__ = ["read"]
+__all__ = [
+    "read",
+    "df_to_xf",
+    "global_alignments_to_dataframe",
+    "local_alignments_to_dataframe",
+    "__version__",
+]
