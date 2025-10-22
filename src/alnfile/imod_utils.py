@@ -32,7 +32,7 @@ def df_to_xf(df: pd.DataFrame, yx: bool = False) -> np.ndarray:
     IMOD .xf format uses 6 values per tilt image: A11 A12 A21 A22 DX DY
     
     The transformation matrix components are:
-        θ = - ROT
+        θ = -ROT
         A11, A22 = cos(θ)
         A12 = -sin(θ)  
         A21 = sin(θ)

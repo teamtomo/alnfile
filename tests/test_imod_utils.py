@@ -36,16 +36,16 @@ def test_45_degree_rotation(simple_df):
     df = simple_df.iloc[[1]]
     xf = alnfile.df_to_xf(df, yx=False)
 
-    # For 45 degree rotation:
-    # A11 = A22 = cos(45°) ≈ 0.707107
-    # A12 = -sin(45°) ≈ -0.707107
-    # A21 = sin(45°) ≈ 0.707107
+    # For rot=45 degree, θ = -45°:
+    # A11 = A22 = cos(-45°) = cos(45°) ≈ 0.707107
+    # A12 = -sin(-45°) = sin(45°) ≈ 0.707107
+    # A21 = sin(-45°) = -sin(45°) ≈ -0.707107
     sqrt2_inv = 1.0 / np.sqrt(2.0)
 
     # Check rotation components
     assert abs(xf[0, 0, 0] - sqrt2_inv) < 1e-6  # A11
-    assert abs(xf[0, 0, 1] - (-sqrt2_inv)) < 1e-6  # A12
-    assert abs(xf[0, 1, 0] - sqrt2_inv) < 1e-6  # A21
+    assert abs(xf[0, 0, 1] - sqrt2_inv) < 1e-6  # A12
+    assert abs(xf[0, 1, 0] - (-sqrt2_inv)) < 1e-6  # A21
     assert abs(xf[0, 1, 1] - sqrt2_inv) < 1e-6  # A22
 
 
@@ -55,11 +55,12 @@ def test_translation_calculation(simple_df):
     df = simple_df.iloc[[1]]
     xf = alnfile.df_to_xf(df, yx=False)
 
-    # DX = cos(45°)*(-10) + (-sin(45°))*(-5)
-    # DY = sin(45°)*(-10) + cos(45°)*(-5)
+    # With θ = -45° (from rot=45):
+    # DX = A11*(-10) + A12*(-5) = cos(-45°)*(-10) + (-sin(-45°))*(-5)
+    # DY = A21*(-10) + A22*(-5) = sin(-45°)*(-10) + cos(-45°)*(-5)
     sqrt2_inv = 1.0 / np.sqrt(2.0)
-    expected_dx = sqrt2_inv * (-10) + (-sqrt2_inv) * (-5)
-    expected_dy = sqrt2_inv * (-10) + sqrt2_inv * (-5)
+    expected_dx = sqrt2_inv * (-10) + sqrt2_inv * (-5)
+    expected_dy = (-sqrt2_inv) * (-10) + sqrt2_inv * (-5)
 
     assert abs(xf[0, 0, 2] - expected_dx) < 1e-6  # DX
     assert abs(xf[0, 1, 2] - expected_dy) < 1e-6  # DY
