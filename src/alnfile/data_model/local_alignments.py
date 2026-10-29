@@ -1,21 +1,41 @@
+"""Model for the local alignment section of the AreTomo3 .aln file."""
+
+from collections.abc import Iterator
 from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict
 
-LOCAL_COLUMNS = ['sec_idx', 'patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']
+LOCAL_COLUMNS = [
+    "sec_idx",
+    "patch_idx",
+    "center_x",
+    "center_y",
+    "shift_x",
+    "shift_y",
+    "is_reliable",
+]
 
 
 class PatchAlignmentParameters(BaseModel):
-    """Patch-based alignment data (local alignment)
+    """Patch-based alignment data (local alignment).
 
-    Attributes:
-        sec_idx (int): Tilt position in final tilt series stack, zero-indexed (post dark frame removal).
-        patch_idx (int): Sequential patch identifier within this tilt image (zero-indexed).
-        center_x (float): Expected x position of patch center relative to image center (pixels).
-        center_y (float): Expected y position of patch center relative to image center (pixels).
-        shift_x (float): Measured x deviation from expected patch position (pixels).
-        shift_y (float): Measured y deviation from expected patch position (pixels).
-        is_reliable (float): Confidence flag for patch alignment quality (1.0=reliable, 0.0=unreliable).
+    Attributes
+    ----------
+    sec_idx : int
+        Tilt position in final tilt series stack, zero-indexed
+        (post dark frame removal).
+    patch_idx : int
+        Sequential patch identifier within this tilt image (zero-indexed).
+    center_x : float
+        Expected x position of patch center relative to image center (pixels).
+    center_y : float
+        Expected y position of patch center relative to image center (pixels).
+    shift_x : float
+        Measured x deviation from expected patch position (pixels).
+    shift_y : float
+        Measured y deviation from expected patch position (pixels).
+    is_reliable : float
+        Confidence flag for patch alignment quality (1.0=reliable, 0.0=unreliable).
     """
 
     model_config = ConfigDict(frozen=False)
@@ -46,10 +66,10 @@ class PatchAlignmentParameters(BaseModel):
             center_y=float(values[3]),
             shift_x=float(values[4]),
             shift_y=float(values[5]),
-            is_reliable=float(values[6])
+            is_reliable=float(values[6]),
         )
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[float]:
         """Allow iteration for DataFrame compatibility."""
         return iter(
             [
@@ -77,5 +97,9 @@ class PatchAlignmentParameters(BaseModel):
 
     def __repr__(self) -> str:
         """Return string representation."""
-        return (f"LocalAlignmentParameters(sec_idx={self.sec_idx}, patch_idx={self.patch_idx}, "
-                f"shift_x={self.shift_x:.2f}, shift_y={self.shift_y:.2f})")
+        return (
+            f"LocalAlignmentParameters(sec_idx={self.sec_idx}, "
+            f"patch_idx={self.patch_idx}, "
+            f"shift_x={self.shift_x:.2f}, "
+            f"shift_y={self.shift_y:.2f})"
+        )
