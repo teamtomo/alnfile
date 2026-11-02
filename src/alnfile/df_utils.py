@@ -42,7 +42,19 @@ def global_alignments_to_dataframe(
 def local_alignments_to_dataframe(
     alignments: list[PatchAlignmentParameters],
 ) -> pd.DataFrame:
-    """Convert list of PatchAlignmentParameters to pandas DataFrame."""
+    """Convert list of PatchAlignmentParameters to pandas DataFrame.
+
+    Parameters
+    ----------
+    alignments : list[PatchAlignmentParameters]
+        List of local (patch) alignment parameters
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with columns: sec_idx, patch_idx, center_x, center_y,
+        shift_x, shift_y, is_reliable
+    """
     data = {
         "sec_idx": np.array([la.sec_idx for la in alignments], dtype=np.int64),
         "patch_idx": np.array([la.patch_idx for la in alignments], dtype=np.int64),
