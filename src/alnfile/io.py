@@ -1,3 +1,5 @@
+"""Input/output functions for AreTomo .aln files."""
+
 import os
 from pathlib import Path
 from typing import Literal
@@ -17,7 +19,7 @@ def read(
 ) -> pd.DataFrame:
     """
     Load AreTomo .aln file and extract alignment data.
-    
+
     Parameters
     ----------
     file : Path | str
@@ -26,18 +28,17 @@ def read(
         Which alignment data to extract:
         - "global": Per-tilt rigid transformations
         - "local": Per-patch deformation data
-        
+
     Returns
     -------
     pd.DataFrame
         Alignment parameters.
-        
+
     Raises
     ------
     ValueError
         Invalid alignment_type, missing file, or unreadable file
     """
-
     # Validate if file exists
     file = Path(file)
     if not file.exists():
@@ -57,8 +58,9 @@ def read(
         case "local":
             if not has_local_alignment:
                 raise ValueError(
-                    "Local alignment has not been performed (NumPatches=0 or no local alignment data found)."
+                    "Local alignment has not been performed "
+                    "(NumPatches=0 or no local alignment data found)."
                 )
             return local_alignments_to_dataframe(aln_file.LocalAlignments)
         case _:
-            raise ValueError(f"alignment_type must be one of 'global', 'local'")
+            raise ValueError("alignment_type must be one of 'global', 'local'")

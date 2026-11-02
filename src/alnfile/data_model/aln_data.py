@@ -1,25 +1,37 @@
+"""Data model for root AreTomo3 .aln file."""
+
 from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from alnfile.data_model.dark_frames import DarkFrameInfo
 from alnfile.data_model.global_alignments import TiltImageAlignmentParameters
 from alnfile.data_model.local_alignments import PatchAlignmentParameters
-from alnfile.data_model.dark_frames import DarkFrameInfo
 
 
 class AlnData(BaseModel):
-    """Data model for AreTomo3 .aln file data with global and patch-based alignment records.
+    """Data model for AreTomo3 .aln file with global and patch-based alignment records.
 
-    Attributes:
-        header (str): File format identifier line (typically "# AreTomo Alignment").
-        RawSize (tuple[int, int, int]): Original tilt series dimensions: width, height, number of tilts.
-        NumPatches (int): Grid size for patch-based local alignment (0 = global only).
-        DarkFrames (list[DarkFrameInfo]): Excluded tilt images removed during processing.
-        AlphaOffset (float): Angular offset correction for sample tilt axis (degrees).
-        BetaOffset (float): Angular offset correction for beam tilt axis (degrees).
-        GlobalAlignments (list[TiltImageAlignmentParameters]): Per-tilt rigid transformation parameters.
-        LocalAlignments (list[PatchAlignmentParameters]): Per-patch deformation measurements.
+    Attributes
+    ----------
+    header : str
+        File format identifier line (typically "# AreTomo Alignment").
+    RawSize : tuple[int, int, int]
+        Original tilt series dimensions: width, height, number of tilts.
+    NumPatches : int
+        Grid size for patch-based local alignment (0 = global only).
+    DarkFrames : list[DarkFrameInfo]
+        Excluded tilt images removed during processing.
+    AlphaOffset : float
+        Angular offset correction for sample tilt axis (degrees).
+    BetaOffset : float
+        Angular offset correction for beam tilt axis (degrees).
+    GlobalAlignments : list[TiltImageAlignmentParameters]
+        Per-tilt rigid transformation parameters.
+    LocalAlignments : list[PatchAlignmentParameters]
+        Per-patch deformation measurements.
     """
+
     header: str = "# AreTomo Alignment / Priims bprmMn"
     RawSize: tuple[int, int, int] = (0, 0, 0)
     NumPatches: int = 0
@@ -46,11 +58,13 @@ class AlnData(BaseModel):
         section = None
 
         for line in lines:
-            if not line or not line[0] == '#':
+            if not line or not line[0] == "#":
                 if not line or line.isspace():
                     continue
                 if section == "GlobalAlignment":
-                    global_alignments.append(TiltImageAlignmentParameters.from_string(line))
+                    global_alignments.append(
+                        TiltImageAlignmentParameters.from_string(line)
+                    )
                 elif section == "LocalAlignment":
                     local_alignments.append(PatchAlignmentParameters.from_string(line))
                 continue
@@ -84,10 +98,15 @@ class AlnData(BaseModel):
         )
 
     def __str__(self) -> str:
+        """Convert AlnData to AreTomo .aln file format string."""
         dark_frames = "\n".join(df.to_aln_string() for df in self.DarkFrames)
-        global_alignments = "\n".join(ga.to_aln_string() for ga in self.GlobalAlignments)
-        local_alignments = "" if self.LocalAlignments is None else "\n".join(
-            la.to_aln_string() for la in self.LocalAlignments
+        global_alignments = "\n".join(
+            ga.to_aln_string() for ga in self.GlobalAlignments
+        )
+        local_alignments = (
+            ""
+            if self.LocalAlignments is None
+            else "\n".join(la.to_aln_string() for la in self.LocalAlignments)
         )
         return (
             f"{self.header}\n"
@@ -96,7 +115,8 @@ class AlnData(BaseModel):
             f"{dark_frames}\n"
             f"# AlphaOffset ={self.AlphaOffset:>9.2f}\n"
             f"# BetaOffset ={self.BetaOffset:>9.2f}\n"
-            "# SEC     ROT         GMAG       TX          TY      SMEAN     SFIT    SCALE     BASE     TILT\n"
+            "# SEC     ROT         GMAG       TX          TY      "
+            "SMEAN     SFIT    SCALE     BASE     TILT\n"
             f"{global_alignments}\n"
             "# Local Alignment\n"
             f"{local_alignments}\n"
@@ -109,18 +129,20 @@ class AlnData(BaseModel):
         Args:
             file_path: Path to the .aln file
 
-        Returns:
+        Returns
+        -------
             AlnFile object with parsed alignment data
 
-        Raises:
+        Raises
+        ------
             FileNotFoundError: If file doesn't exist
             UnicodeDecodeError: If file has encoding issues
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
         except UnicodeDecodeError:
             # Try with latin-1 encoding as fallback
-            with open(file_path, 'r', encoding='latin-1') as f:
+            with open(file_path, encoding="latin-1") as f:
                 content = f.read()
         return cls.from_string(content)

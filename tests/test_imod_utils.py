@@ -23,9 +23,7 @@ def test_zero_rotation(simple_df):
 
     # For zero rotation and zero translation:
     # A11=1, A12=0, A21=0, A22=1, DX=0, DY=0
-    expected = np.array([[[1.0, 0.0, 0.0],
-                          [0.0, 1.0, 0.0]]]
-                        )
+    expected = np.array([[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]])
 
     np.testing.assert_array_almost_equal(xf, expected, decimal=6)
 

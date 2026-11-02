@@ -1,25 +1,51 @@
+"""Model for the global alignment section of the AreTomo3 .aln file."""
+
+from collections.abc import Iterator
 from typing import ClassVar
 
 from pydantic import BaseModel
 
-GLOBAL_COLUMNS = ['sec', 'rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt']
+GLOBAL_COLUMNS = [
+    "sec",
+    "rot",
+    "gmag",
+    "tx",
+    "ty",
+    "smean",
+    "sfit",
+    "scale",
+    "base",
+    "tilt",
+]
 
 
 class TiltImageAlignmentParameters(BaseModel):
     """Stores per-tilt global alignment parameters from AreTomo processing.
 
-    Attributes:
-        sec (int): Zero-indexed position in the final aligned stack (excludes dark frames).
-        rot (float): Rotation angle of the tilt axis relative to Y-axis (degrees).
-        gmag (float): Global magnification adjustment factor.
-        tx (float): X shift (pixels).
-        ty (float): Y shift (pixels).
-        smean (float): Statistical metric (implementation-specific, see AreTomo docs).
-        sfit (float): Statistical metric (implementation-specific, see AreTomo docs).
-        scale (float): Scaling parameter for this tilt.
-        base (float): (implementation-specific, see AreTomo docs).
-        tilt (float): Nominal tilt angle (degrees).
+    Attributes
+    ----------
+    sec : int
+        Zero-indexed position in the final aligned stack (excludes dark frames).
+    rot : float
+        Rotation angle of the tilt axis relative to Y-axis (degrees).
+    gmag : float
+        Global magnification adjustment factor.
+    tx : float
+        X shift (pixels).
+    ty : float
+        Y shift (pixels).
+    smean : float
+        Statistical metric (implementation-specific, see AreTomo docs).
+    sfit : float
+        Statistical metric (implementation-specific, see AreTomo docs).
+    scale : float
+        Scaling parameter for this tilt.
+    base : float
+        (implementation-specific, see AreTomo docs).
+    tilt : float
+        Nominal tilt angle (degrees).
     """
+
     sec: int
     rot: float
     gmag: float = 1.0
@@ -52,13 +78,24 @@ class TiltImageAlignmentParameters(BaseModel):
             sfit=float(values[6]),
             scale=float(values[7]),
             base=float(values[8]),
-            tilt=float(values[9])
+            tilt=float(values[9]),
         )
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[float]:
         """Allow iteration for DataFrame compatibility."""
         return iter(
-            [self.sec, self.rot, self.gmag, self.tx, self.ty, self.smean, self.sfit, self.scale, self.base, self.tilt],
+            [
+                self.sec,
+                self.rot,
+                self.gmag,
+                self.tx,
+                self.ty,
+                self.smean,
+                self.sfit,
+                self.scale,
+                self.base,
+                self.tilt,
+            ],
         )
 
     def to_aln_string(self) -> str:
@@ -78,5 +115,7 @@ class TiltImageAlignmentParameters(BaseModel):
 
     def __repr__(self) -> str:
         """Return string representation."""
-        return (f"GlobalAlignmentParameters(sec={self.sec}, rot={self.rot:.4f}, "
-                f"tx={self.tx:.3f}, ty={self.ty:.3f}, tilt={self.tilt:.2f})")
+        return (
+            f"GlobalAlignmentParameters(sec={self.sec}, rot={self.rot:.4f}, "
+            f"tx={self.tx:.3f}, ty={self.ty:.3f}, tilt={self.tilt:.2f})"
+        )

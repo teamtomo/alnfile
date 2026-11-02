@@ -1,4 +1,3 @@
-import pytest
 import pandas as pd
 
 from alnfile.data_model import (
@@ -41,7 +40,18 @@ def test_get_global_alignments(file_with_local):
 
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
-    expected_cols = ['sec', 'rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt']
+    expected_cols = [
+        "sec",
+        "rot",
+        "gmag",
+        "tx",
+        "ty",
+        "smean",
+        "sfit",
+        "scale",
+        "base",
+        "tilt",
+    ]
     assert list(df.columns) == expected_cols
 
 
@@ -52,7 +62,15 @@ def test_get_local_alignments_with_data(file_with_local):
 
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
-    expected_cols = ['sec_idx', 'patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']
+    expected_cols = [
+        "sec_idx",
+        "patch_idx",
+        "center_x",
+        "center_y",
+        "shift_x",
+        "shift_y",
+        "is_reliable",
+    ]
     assert list(df.columns) == expected_cols
 
 
@@ -63,7 +81,15 @@ def test_get_local_alignments_no_data(file_no_local):
 
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 0
-    expected_cols = ['sec_idx', 'patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']
+    expected_cols = [
+        "sec_idx",
+        "patch_idx",
+        "center_x",
+        "center_y",
+        "shift_x",
+        "shift_y",
+        "is_reliable",
+    ]
     assert list(df.columns) == expected_cols
 
 
@@ -80,7 +106,7 @@ def test_global_alignment_info_creation():
 
 def test_global_alignment_info_from_string():
     """Test parsing GlobalAlignmentParameters from string."""
-    line = "    1   -95.4040    1.00000      9.220    103.933     1.00     1.00     1.00     0.00    -63.20"
+    line = "    1   -95.4040    1.00000      9.220    103.933     1.00     1.00     1.00     0.00    -63.20"  # noqa: E501
     info = TiltImageAlignmentParameters.from_string(line)
 
     assert info.sec == 1
@@ -94,8 +120,13 @@ def test_global_alignment_info_from_string():
 def test_local_alignment_info_creation():
     """Test creating LocalAlignmentParameters."""
     info = PatchAlignmentParameters(
-        sec_idx=0, patch_idx=1, center_x=100.0, center_y=200.0,
-        shift_x=1.5, shift_y=2.5, is_reliable=1.0
+        sec_idx=0,
+        patch_idx=1,
+        center_x=100.0,
+        center_y=200.0,
+        shift_x=1.5,
+        shift_y=2.5,
+        is_reliable=1.0,
     )
     assert info.sec_idx == 0
     assert info.patch_idx == 1
@@ -123,14 +154,39 @@ def test_local_alignment_info_from_string():
 def test_global_alignment_field_names():
     """Test GlobalAlignmentParameters field names property."""
     info = TiltImageAlignmentParameters(sec=0, rot=0.0, tx=0.0, ty=0.0, tilt=0.0)
-    expected = ['sec', 'rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt']
+    expected = [
+        "sec",
+        "rot",
+        "gmag",
+        "tx",
+        "ty",
+        "smean",
+        "sfit",
+        "scale",
+        "base",
+        "tilt",
+    ]
     assert info.field_names == expected
 
 
 def test_local_alignment_field_names():
     """Test LocalAlignmentParameters field names property."""
-    info = PatchAlignmentParameters(sec_idx=0, patch_idx=0, center_x=0.0, center_y=0.0,
-                                    shift_x=0.0, shift_y=0.0, is_reliable=1.0
-                                    )
-    expected = ['sec_idx', 'patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']
+    info = PatchAlignmentParameters(
+        sec_idx=0,
+        patch_idx=0,
+        center_x=0.0,
+        center_y=0.0,
+        shift_x=0.0,
+        shift_y=0.0,
+        is_reliable=1.0,
+    )
+    expected = [
+        "sec_idx",
+        "patch_idx",
+        "center_x",
+        "center_y",
+        "shift_x",
+        "shift_y",
+        "is_reliable",
+    ]
     assert info.field_names == expected

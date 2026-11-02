@@ -1,11 +1,13 @@
+"""Data models for different portions of the AreTomo3 .aln file format."""
+
 from .aln_data import AlnData
+from .dark_frames import DarkFrameInfo
 from .global_alignments import TiltImageAlignmentParameters
 from .local_alignments import PatchAlignmentParameters
-from .dark_frames import DarkFrameInfo
 
 __all__ = [
     "AlnData",
-    "TiltImageAlignmentParameters",
-    "PatchAlignmentParameters",
     "DarkFrameInfo",
+    "PatchAlignmentParameters",
+    "TiltImageAlignmentParameters",
 ]

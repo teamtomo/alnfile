@@ -1,6 +1,7 @@
-import pytest
 from pathlib import Path
+
 import pandas as pd
+import pytest
 
 import alnfile
 
@@ -12,13 +13,13 @@ def test_imports_with_version():
 
 def test_read_function_available():
     """Test that the read function is available."""
-    assert hasattr(alnfile, 'read')
+    assert hasattr(alnfile, "read")
     assert callable(alnfile.read)
 
 
 def test_import():
     """Test that alnfile can be imported and has the read function."""
-    assert hasattr(alnfile, 'read')
+    assert hasattr(alnfile, "read")
     assert callable(alnfile.read)
 
 
@@ -33,12 +34,23 @@ def test_read_global_alignments(file_fixture, request):
     assert len(df) > 0
 
     # Check columns
-    expected_cols = ['sec', 'rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt']
+    expected_cols = [
+        "sec",
+        "rot",
+        "gmag",
+        "tx",
+        "ty",
+        "smean",
+        "sfit",
+        "scale",
+        "base",
+        "tilt",
+    ]
     assert list(df.columns) == expected_cols
 
     # Check data types
-    assert df['sec'].dtype == 'int64'
-    for col in ['rot', 'gmag', 'tx', 'ty', 'smean', 'sfit', 'scale', 'base', 'tilt']:
+    assert df["sec"].dtype == "int64"
+    for col in ["rot", "gmag", "tx", "ty", "smean", "sfit", "scale", "base", "tilt"]:
         assert pd.api.types.is_numeric_dtype(df[col])
 
 
@@ -51,13 +63,21 @@ def test_read_local_alignments(file_with_local):
     assert len(df) > 0
 
     # Check columns
-    expected_cols = ['sec_idx', 'patch_idx', 'center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']
+    expected_cols = [
+        "sec_idx",
+        "patch_idx",
+        "center_x",
+        "center_y",
+        "shift_x",
+        "shift_y",
+        "is_reliable",
+    ]
     assert list(df.columns) == expected_cols
 
     # Check data types
-    assert df['sec_idx'].dtype == 'int64'
-    assert df['patch_idx'].dtype == 'int64'
-    for col in ['center_x', 'center_y', 'shift_x', 'shift_y', 'is_reliable']:
+    assert df["sec_idx"].dtype == "int64"
+    assert df["patch_idx"].dtype == "int64"
+    for col in ["center_x", "center_y", "shift_x", "shift_y", "is_reliable"]:
         assert pd.api.types.is_numeric_dtype(df[col])
 
 

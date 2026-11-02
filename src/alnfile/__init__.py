@@ -21,9 +21,9 @@ except PackageNotFoundError:
     __version__ = "unknown"
 
 __all__ = [
-    "read",
+    "__version__",
     "df_to_xf",
     "global_alignments_to_dataframe",
     "local_alignments_to_dataframe",
-    "__version__",
+    "read",
 ]

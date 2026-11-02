@@ -1,13 +1,21 @@
+"""Model for the dark frames section of the AreTomo3 .aln file."""
+
+from collections.abc import Iterator
+
 from pydantic import BaseModel, ConfigDict
 
 
 class DarkFrameInfo(BaseModel):
     """Records metadata for tilt images excluded from reconstruction.
 
-    Attributes:
-        section_idx (int): Zero-indexed position in original acquisition order (pre-filtering).
-        val2 (int): One-indexed position.
-        angle (float): Nominal tilt angle for the excluded image (degrees).
+    Attributes
+    ----------
+    section_idx : int
+        Zero-indexed position in original acquisition order (pre-filtering).
+    val2 : int
+        One-indexed position.
+    angle : float
+        Nominal tilt angle for the excluded image (degrees).
     """
 
     model_config = ConfigDict(frozen=False)
@@ -26,7 +34,7 @@ class DarkFrameInfo(BaseModel):
         angle = float(values[2])
         return cls(section_idx=section_idx, val2=val2, angle=angle)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[float]:
         """Allow iteration for compatibility."""
         return iter([self.section_idx, self.val2, self.angle])
 
